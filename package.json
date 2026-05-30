@@ -1,0 +1,22 @@
+{
+  "name": "trademirror-mvp",
+  "version": "2.0.0",
+  "description": "TradeMirror — AI behavioral intervention for traders",
+  "type": "module",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js",
+    "dev": "node --watch bot.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "dotenv": "^16.4.5",
+    "node-fetch": "^3.3.2",
+    "node-telegram-bot-api": "^0.66.0",
+    "sqlite": "^5.1.1",
+    "sqlite3": "^5.1.7"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
