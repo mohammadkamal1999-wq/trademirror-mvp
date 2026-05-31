@@ -69,7 +69,23 @@ export async function getDb() {
     CREATE INDEX IF NOT EXISTS idx_sub_user_day ON submissions(user_id, day);
     CREATE INDEX IF NOT EXISTS idx_int_user_day ON interventions(user_id, day);
   `);
+  try {
+    await _db.exec(`
+      ALTER TABLE users ADD COLUMN sched_start_sent TEXT DEFAULT '';
+    `);
+  } catch {}
 
+  try {
+    await _db.exec(`
+      ALTER TABLE users ADD COLUMN sched_end_sent TEXT DEFAULT '';
+    `);
+  } catch {}
+
+  try {
+    await _db.exec(`
+      ALTER TABLE users ADD COLUMN sched_locked_sent TEXT DEFAULT '';
+    `);
+  } catch {}
   return _db;
 }
 
