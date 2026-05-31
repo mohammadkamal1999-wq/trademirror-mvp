@@ -33,6 +33,21 @@ const pause = ms => new Promise(r => setTimeout(r, ms));
 const html  = (chatId, text, extra = {}) =>
   bot.sendMessage(chatId, text, { parse_mode: "HTML", ...extra });
 
+// ── Privileged access ─────────────────────────────────────────────────────────
+// Admin and beta users bypass ALL daily limits (analyses + rules).
+// Set ADMIN_USER_ID and BETA_USER_IDS in your .env file.
+// Get your Telegram ID by messaging @userinfobot on Telegram.
+
+const ADMIN_ID = process.env.ADMIN_USER_ID?.trim() || "";
+const BETA_IDS = (process.env.BETA_USER_IDS || "")
+  .split(",")
+  .map(id => id.trim())
+  .filter(Boolean);
+
+function isPrivileged(userId) {
+  return ADMIN_ID && userId === ADMIN_ID || BETA_IDS.includes(userId);
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // /start — entry point + onboarding router
 // ─────────────────────────────────────────────────────────────────────────────
@@ -214,7 +229,7 @@ bot.on("photo", async (msg) => {
   const todayCount = await getTodayCount(userId);
   const limit      = LIMITS[user.plan]?.daily ?? 3;
 
-  if (todayCount >= limit) {
+  if (todayCount >= limit && !isPrivileged(userId)) {
     if (user.plan === "free") {
       await html(chatId,
         `You've used all ${limit} free analyses for today.\n\n` +
@@ -269,7 +284,7 @@ bot.on("photo", async (msg) => {
     await html(chatId, formatAssessment(result, caption));
 
     // ── Soft upgrade nudge after final free analysis ──────────────────────
-    if (user.plan === "free" && todayCount + 1 >= limit) {
+    if (user.plan === "free" && todayCount + 1 >= limit && !isPrivileged(userId)) {
       await pause(1000);
       await html(chatId,
         `<i>That was your last free analysis today.</i>\n\n` +
@@ -311,7 +326,7 @@ bot.onText(/\/setrule (.+)/, async (msg, match) => {
   const rules  = await getRules(userId);
   const limit  = LIMITS[user?.plan || "free"].rules;
 
-  if (rules.length >= limit) {
+  if (rules.length >= limit && !isPrivileged(userId)) {
     await html(msg.chat.id,
       `You've hit the rule limit for your plan (${limit} rules).\n\n` +
       `Upgrade to Pro for unlimited rules. /plan`
@@ -370,7 +385,7 @@ bot.onText(/\/stats/, async (msg) => {
   ]);
 
   const user  = await getUser(userId);
-  const limit = LIMITS[user?.plan || "free"].daily;
+  const limit = isPrivileged(userId) ? 999 : LIMITS[user?.plan || "free"].daily;
 
   // Score: start at 100, penalize rule violations and interventions fired
   const recentSubs  = await getRecentSubmissions(userId, 24 * 60);
