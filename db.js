@@ -155,6 +155,42 @@ export async function getTotalCount(userId) {
   return row?.n || 0;
 }
 
+// Returns all users who completed onboarding
+export async function getAllActiveUsers() {
+  const db = await getDb();
+  return db.all(
+    "SELECT * FROM users WHERE step = 'done'"
+  );
+}
+
+// Read scheduler state
+export async function getSchedulerState(userId) {
+  const db = await getDb();
+  const row = await db.get(
+    "SELECT sched_start_sent, sched_end_sent, sched_locked_sent FROM users WHERE user_id = ?",
+    [userId]
+  );
+
+  if (!row) return null;
+
+  return {
+    startSent: row.sched_start_sent || "",
+    endSent: row.sched_end_sent || "",
+    lockedSent: row.sched_locked_sent || "",
+  };
+}
+
+// Write scheduler state
+export async function setSchedField(userId, field, value) {
+  const db = await getDb();
+
+  await db.run(
+    `UPDATE users SET ${field} = ? WHERE user_id = ?`,
+    [value, userId]
+  );
+}
+}
+
 // ─── Interventions ────────────────────────────────────────────────────────────
 
 // Was this intervention type already sent today? Prevents repeating ourselves.
