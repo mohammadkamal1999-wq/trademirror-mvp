@@ -26,7 +26,6 @@ import {
 } from "./db.js";
 
 import { checkForIntervention, SESSION_LABELS } from "./interventions.js";
-import { startScheduler, getNextSessionInfo, SESSION_WINDOWS } from "./scheduler.js";
 import { analyzeChart, formatAssessment, downloadImage, parseCaption } from "./ai.js";
 
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true });
@@ -511,5 +510,4 @@ getDb().then(() => {
   console.log("🪞  TradeMirror MVP is running");
   console.log("    Behavioral intervention system active");
   console.log("    Waiting for traders...");
-  startScheduler(bot);
 });
