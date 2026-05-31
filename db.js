@@ -189,7 +189,6 @@ export async function setSchedField(userId, field, value) {
     [value, userId]
   );
 }
-}
 
 // ─── Interventions ────────────────────────────────────────────────────────────
 
